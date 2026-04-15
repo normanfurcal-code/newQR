@@ -1,0 +1,16 @@
+[
+    {
+        "code": "PB_FLOOR0_EXIT1",
+        "descripcion": "Salida del piso 0, cerca de la entrada principal" 
+    },
+    {
+        "code": "PB_FLOOR1_EXIT2",
+        "descripcion": "Salida del piso 1, cerca de la zona de carga y descarga"
+    },
+    {
+        "code": "PB_FLOOR2_EXIT1",
+        "descripcion": "Salida del piso 2, cerca de la zona de oficinas" 
+    }
+
+    
+]

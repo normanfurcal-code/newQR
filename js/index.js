@@ -2,7 +2,7 @@
 let html5QrCode; // Para el escáner QR
 let scanning = false; // Indica si la cámara está activa
 var qrData = [];
-let doors = {};
+let qrMemory = JSON.parse(localStorage.getItem("qrMemory")) || [];
 let url = "json/qr.json";
 
 async function getData(url) {

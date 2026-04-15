@@ -101,3 +101,48 @@ const cerrarCamara = async () => {
 
   scanning = false; // Actualiza el estado para indicar que la cámara está apagada
 };
+
+function procesarQR(decodedText) {
+
+  const cleanQR = decodedText.trim(); // 👈 CLAVE
+
+  console.log("QR leído:", cleanQR);
+  console.log("JSON:", qrData);
+
+  const existeEnJSON = qrData.find(item => 
+    item.code.trim() === cleanQR
+  );
+
+  if (!existeEnJSON) {
+    Swal.fire({
+      title: "No válido",
+      text: "El QR no existe en el sistema",
+      icon: "error"
+    });
+    return;
+  }
+
+  const yaEnMemoria = qrMemory.includes(cleanQR);
+
+  if (yaEnMemoria) {
+    Swal.fire({
+      title: "Ya registrado",
+      text: "Este QR ya fue escaneado antes",
+      icon: "warning"
+    });
+    return;
+  }
+
+  qrMemory.push(cleanQR);
+  localStorage.setItem("qrMemory", JSON.stringify(qrMemory));
+
+  Swal.fire({
+    title: "OK",
+    text: "QR válido y guardado",
+    icon: "success"
+  });
+
+  console.log("Memoria:", qrMemory);
+  console.log("RAW:", decodedText);
+  console.log("LENGTH:", decodedText.length);
+}

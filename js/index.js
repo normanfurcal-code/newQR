@@ -39,6 +39,17 @@ const activarSonido = () => {
   const audio = document.getElementById("audioScaner");
   audio.play().catch(() => {});
 };
+// callback de escaneo
+const onScan = (decodedText) => {
+  if (scanned) return;
+  scanned = true;
+
+  activarSonido();
+  procesarQR(decodedText);
+
+  setTimeout(() => {
+    cerrarCamara();
+  }, 300);
 
 // iniciar cámara
 const encenderCamara = async () => { // async porque usa await: espera un resultado
@@ -47,15 +58,15 @@ const encenderCamara = async () => { // async porque usa await: espera un result
   html5QrCode = new Html5Qrcode("reader"); // Inicializa el escáner en el div con id "reader"
 
   // ✅ Intento principal (iPhone + Android moderno)
-   /* await html5QrCode.start(
+    await html5QrCode.start(
       { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
+      { fps: 10, qrbox: 250 }, onScan
       
     );
 
-    scanning = true; */
+    scanning = true;
 
-  try { // Para capturar errores al iniciar la cámara o escanear
+  /*try { // Para capturar errores al iniciar la cámara o escanear
     const cameras = await Html5Qrcode.getCameras(); // Obtiene las cámaras del movil
 
     // Condicion para verificar si hay cámaras disponibles
@@ -90,7 +101,7 @@ const encenderCamara = async () => { // async porque usa await: espera un result
           // apaga o desactiva el escaner despues de leer 
           cerrarCamara();
         }
-    );
+    );*/
 
     // Pero indica que la camara esta encendida
       scanning = true;

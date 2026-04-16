@@ -47,24 +47,13 @@ const encenderCamara = async () => { // async porque usa await: espera un result
   html5QrCode = new Html5Qrcode("reader"); // Inicializa el escáner en el div con id "reader"
 
   // ✅ Intento principal (iPhone + Android moderno)
-    await html5QrCode.start(
+   /* await html5QrCode.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: 250 },
-      (decodedText) => { // Función que se ejecuta cuando se detecta un código QR
-          activarSonido(); // Reproduce el sonido de escaneo
-
-          // Libreria swal para mostrar una alerta bonita con el texto del código QR detectado
-          Swal.fire({
-            title: "Código detectado",
-            text: decodedText,
-            icon: "success"
-          });
-          // apaga o desactiva el escaner despues de leer 
-          cerrarCamara();
-        }
+      
     );
 
-    scanning = true;
+    scanning = true; */
 
   try { // Para capturar errores al iniciar la cámara o escanear
     const cameras = await Html5Qrcode.getCameras(); // Obtiene las cámaras del movil

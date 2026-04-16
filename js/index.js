@@ -48,41 +48,53 @@ const encenderCamara = async () => {
 
   html5QrCode = new Html5Qrcode("reader");
 
+  let procesando = false; // evita múltiples lecturas
+
+  const onScan = (decodedText) => {
+    if (procesando) return;
+    procesando = true;
+
+    activarSonido();
+    procesarQR(decodedText);
+    cerrarCamara();
+  };
+
   try {
-    const cameras = await Html5Qrcode.getCameras();
+    // ✅ MÉTODO UNIVERSAL (funciona en iPhone y Android)
+    await html5QrCode.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      onScan
+    );
 
-    if (cameras && cameras.length) {
-
-      const backCamera = cameras.find(camera =>
-        camera.label.toLowerCase().includes("back") ||
-        camera.label.toLowerCase().includes("rear") ||
-        camera.label.toLowerCase().includes("environment")
-      );
-
-      const cameraId = backCamera ? backCamera.id : cameras[0].id;
-
-      await html5QrCode.start(
-        cameraId,
-        {
-          fps: 10,
-          qrbox: 250
-        },
-        (decodedText) => {
-          activarSonido();
-
-          // 👇 AQUÍ se usa tu lógica real
-          procesarQR(decodedText);
-
-          cerrarCamara();
-        }
-      );
-
-      scanning = true;
-    }
+    scanning = true;
 
   } catch (err) {
-    console.error(err);
-    alert("Error al iniciar la cámara");
+    console.warn("Fallback a selección de cámara:", err);
+
+    try {
+      // 🔁 fallback para Android/PC
+      const cameras = await Html5Qrcode.getCameras();
+
+      if (cameras && cameras.length) {
+        const cameraId = cameras[0].id;
+
+        await html5QrCode.start(
+          cameraId,
+          { fps: 10, qrbox: 250 },
+          onScan
+        );
+
+        scanning = true;
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("No se pudo iniciar la cámara");
+    }
   }
 };
 

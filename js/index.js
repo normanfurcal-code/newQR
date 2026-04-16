@@ -118,55 +118,6 @@ const encenderCamara = async () => {
   }
 };
 
-encenderCamara = async () => {
-  if (scanning) return;
-
-  html5QrCode = new Html5Qrcode("reader");
-
-  try {
-    const cameras = await Html5Qrcode.getCameras();
-    // ✅ Intento principal (iPhone + Android moderno)
-    await html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      onScan, cameras
-    );
-
-    scanning = true;
-
-  } catch (err) {
-    console.warn("Fallback a cámaras:", err);
-
-    /*try {
-      // ✅ Fallback (Android antiguos / PC)
-      const cameras = await Html5Qrcode.getCameras();
-
-      if (!cameras.length) {
-        throw new Error("No hay cámaras disponibles");
-      }
-
-      const backCamera = cameras.find(camera =>
-        camera.label.toLowerCase().includes("back") ||
-        camera.label.toLowerCase().includes("rear") ||
-        camera.label.toLowerCase().includes("environment")
-      );
-
-      const cameraId = backCamera ? backCamera.id : cameras[0].id;
-
-      await html5QrCode.start(
-        cameraId,
-        { fps: 10, qrbox: 250 },
-        onScan
-      );
-
-      scanning = true;
-
-    } catch (err2) {
-      console.error(err2);
-      alert("Error al iniciar la cámara");
-    }*/
-  }
-};
 
 // ========================
 // CERRAR CÁMARA

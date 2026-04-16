@@ -50,7 +50,18 @@ const encenderCamara = async () => { // async porque usa await: espera un result
     await html5QrCode.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: 250 },
-      onScan
+      (decodedText) => { // Función que se ejecuta cuando se detecta un código QR
+          activarSonido(); // Reproduce el sonido de escaneo
+
+          // Libreria swal para mostrar una alerta bonita con el texto del código QR detectado
+          Swal.fire({
+            title: "Código detectado",
+            text: decodedText,
+            icon: "success"
+          });
+          // apaga o desactiva el escaner despues de leer 
+          cerrarCamara();
+        }
     );
 
     scanning = true;
@@ -77,7 +88,7 @@ const encenderCamara = async () => { // async porque usa await: espera un result
         {
           fps: 10, // Velocidad de escaneo (10 frames por segundo)
           qrbox: 250 // Tamaño del área de escaneo (250x250 píxeles)
-        }, onScan,
+        },
         (decodedText) => { // Función que se ejecuta cuando se detecta un código QR
           activarSonido(); // Reproduce el sonido de escaneo
 

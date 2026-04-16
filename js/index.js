@@ -46,6 +46,15 @@ const encenderCamara = async () => { // async porque usa await: espera un result
 
   html5QrCode = new Html5Qrcode("reader"); // Inicializa el escáner en el div con id "reader"
 
+  // ✅ Intento principal (iPhone + Android moderno)
+    await html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      onScan
+    );
+
+    scanning = true;
+
   try { // Para capturar errores al iniciar la cámara o escanear
     const cameras = await Html5Qrcode.getCameras(); // Obtiene las cámaras del movil
 
@@ -68,7 +77,7 @@ const encenderCamara = async () => { // async porque usa await: espera un result
         {
           fps: 10, // Velocidad de escaneo (10 frames por segundo)
           qrbox: 250 // Tamaño del área de escaneo (250x250 píxeles)
-        },
+        }, onScan,
         (decodedText) => { // Función que se ejecuta cuando se detecta un código QR
           activarSonido(); // Reproduce el sonido de escaneo
 

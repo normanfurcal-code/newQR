@@ -1,16 +1,10 @@
 // Variables globales
-let html5QrCode;
-let scanning = false;
-let closing = false;
-let scanned = false;
-
+let html5QrCode; // Para el escáner QR
+let scanning = false; // Indica si la cámara está activa
+var qrData = [];
 let qrMemory = JSON.parse(localStorage.getItem("qrMemory")) || [];
 let url = "json/qr.json";
-let qrData = [];
 
-// ========================
-// Cargar JSON
-// ========================
 async function getData(url) {
   try {
     let response = await fetch(url, {
@@ -26,9 +20,6 @@ async function getData(url) {
   }
 }
 
-// ========================
-// INIT
-// ========================
 document.addEventListener("DOMContentLoaded", async () => {
 
   qrData = await getData(url);
@@ -43,17 +34,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("btn-stop").addEventListener("click", cerrarCamara);
 });
 
-// ========================
-// SONIDO
-// ========================
+// sonido
 const activarSonido = () => {
   const audio = document.getElementById("audioScaner");
   audio.play().catch(() => {});
 };
 
-// ========================
-// CALLBACK SCAN (🔥 CLAVE)
-// ========================
 const onScan = (decodedText) => {
   if (scanned) return;
   scanned = true;
@@ -66,81 +52,77 @@ const onScan = (decodedText) => {
   }, 300);
 };
 
-// ========================
-// ENCENDER CÁMARA
-// ========================
-const encenderCamara = async () => {
-  if (scanning) return;
+// iniciar cámara
+const encenderCamara = async () => { // async porque usa await: espera un resultado
+  if (scanning) return; // Si ya está escaneando, no hace nada
 
-  html5QrCode = new Html5Qrcode("reader");
+  html5QrCode = new Html5Qrcode("reader"); // Inicializa el escáner en el div con id "reader"
 
-  try {
-    // ✅ Intento principal (iPhone + Android moderno)
-    await html5QrCode.start(
+  // ✅ Intento principal (iPhone + Android moderno)
+   /* await html5QrCode.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: 250 },
-      onScan
+      
     );
 
-    scanning = true;
+    scanning = true; */
 
-  } catch (err) {
-    console.warn("Fallback a cámaras:", err);
+  try { // Para capturar errores al iniciar la cámara o escanear
+    const cameras = await Html5Qrcode.getCameras(); // Obtiene las cámaras del movil
 
-    try {
-      // ✅ Fallback (Android antiguos / PC)
-      const cameras = await Html5Qrcode.getCameras();
+    // Condicion para verificar si hay cámaras disponibles
+    if (cameras && cameras.length) {
 
-      if (!cameras.length) {
-        throw new Error("No hay cámaras disponibles");
-      }
-
-      const backCamera = cameras.find(camera =>
-        camera.label.toLowerCase().includes("back") ||
+    // buscar cámara trasera
+      const backCamera = cameras.find(camera => // Si no encuentra una camara llamada back
+        camera.label.toLowerCase().includes("back") || // Tomaro otra camara que este disponible
         camera.label.toLowerCase().includes("rear") ||
         camera.label.toLowerCase().includes("environment")
       );
 
+      // Elegir camara. Si hay una trasera, la usa, sino usa la primera disponible
       const cameraId = backCamera ? backCamera.id : cameras[0].id;
 
+      // Iniciar el escáner con la cámara seleccionada
       await html5QrCode.start(
-        cameraId,
-        { fps: 10, qrbox: 250 },
-        onScan
-      );
+        cameraId, // Camara a usar
+        {
+          fps: 10, // Velocidad de escaneo (10 frames por segundo)
+          qrbox: 250 // Tamaño del área de escaneo (250x250 píxeles)
+        },
+        /*(decodedText) => { // Función que se ejecuta cuando se detecta un código QR
+          activarSonido(); // Reproduce el sonido de escaneo
 
+          // Libreria swal para mostrar una alerta bonita con el texto del código QR detectado
+          Swal.fire({
+            title: "Código detectado",
+            text: decodedText,
+            icon: "success"
+          });
+          // apaga o desactiva el escaner despues de leer 
+          cerrarCamara();
+        }*/
+    );
+
+    // Pero indica que la camara esta encendida
       scanning = true;
-
-    } catch (err2) {
-      console.error(err2);
-      alert("Error al iniciar la cámara");
     }
+  } catch (err) {  // Para capturar errores al iniciar la cámara o escanear
+    console.error(err);
+    alert("Error al iniciar la cámara");
   }
 };
 
-
-// ========================
-// CERRAR CÁMARA
-// ========================
+// detener o apagar la cámara
 const cerrarCamara = async () => {
-  if (!scanning || closing) return;
+  if (!scanning) return; // Evitar errores: Si no esta activa no hace nada
 
-  closing = true;
+  await html5QrCode.stop(); // Detiene la camara y el escáner
+  await html5QrCode.clear(); // Limpia la interfaz del escáner
 
-  try {
-    await html5QrCode.stop();
-  } catch (err) {
-    console.warn("Error al detener cámara:", err);
-  }
-
-  scanning = false;
-  closing = false;
-  scanned = false; // 🔥 permitir nuevo escaneo
+  scanning = false; // Actualiza el estado para indicar que la cámara está apagada
 };
 
-// ========================
-// VALIDACIÓN QR
-// ========================
 function procesarQR(decodedText) {
 
   const cleanQR = decodedText.trim(); // 👈 CLAVE

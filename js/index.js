@@ -1,6 +1,6 @@
 // Variables globales
-let html5QrCode; // Para el escáner QR
-let scanning = false; // Indica si la cámara está activa
+let html5QrCode; 
+let scanning = false;
 var qrData = [];
 let qrMemory = JSON.parse(localStorage.getItem("qrMemory")) || [];
 let url = "json/qr.json";
@@ -37,89 +37,77 @@ document.addEventListener("DOMContentLoaded", async () => {
 // sonido
 const activarSonido = () => {
   const audio = document.getElementById("audioScaner");
-  audio.play().catch(() => {});
+  if (audio) {
+    audio.play().catch(() => {});
+  }
 };
 
 // iniciar cámara
-const encenderCamara = async () => { // async porque usa await: espera un resultado
-  if (scanning) return; // Si ya está escaneando, no hace nada
+const encenderCamara = async () => {
+  if (scanning) return;
 
-  html5QrCode = new Html5Qrcode("reader"); // Inicializa el escáner en el div con id "reader"
+  html5QrCode = new Html5Qrcode("reader");
 
-  // ✅ Intento principal (iPhone + Android moderno)
-   /* await html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      
-    );
+  try {
+    const cameras = await Html5Qrcode.getCameras();
 
-    scanning = true; */
-
-  try { // Para capturar errores al iniciar la cámara o escanear
-    const cameras = await Html5Qrcode.getCameras(); // Obtiene las cámaras del movil
-
-    // Condicion para verificar si hay cámaras disponibles
     if (cameras && cameras.length) {
 
-    // buscar cámara trasera
-      const backCamera = cameras.find(camera => // Si no encuentra una camara llamada back
-        camera.label.toLowerCase().includes("back") || // Tomaro otra camara que este disponible
+      const backCamera = cameras.find(camera =>
+        camera.label.toLowerCase().includes("back") ||
         camera.label.toLowerCase().includes("rear") ||
         camera.label.toLowerCase().includes("environment")
       );
 
-      // Elegir camara. Si hay una trasera, la usa, sino usa la primera disponible
       const cameraId = backCamera ? backCamera.id : cameras[0].id;
 
-      // Iniciar el escáner con la cámara seleccionada
       await html5QrCode.start(
-        cameraId, // Camara a usar
+        cameraId,
         {
-          fps: 10, // Velocidad de escaneo (10 frames por segundo)
-          qrbox: 250 // Tamaño del área de escaneo (250x250 píxeles)
+          fps: 10,
+          qrbox: 250
         },
-        (decodedText) => { // Función que se ejecuta cuando se detecta un código QR
-          activarSonido(); // Reproduce el sonido de escaneo
+        (decodedText) => {
+          activarSonido();
 
-          // Libreria swal para mostrar una alerta bonita con el texto del código QR detectado
-          Swal.fire({
-            title: "Código detectado",
-            text: decodedText,
-            icon: "success"
-          });
-          // apaga o desactiva el escaner despues de leer 
+          // 👇 AQUÍ se usa tu lógica real
+          procesarQR(decodedText);
+
           cerrarCamara();
         }
-    );
+      );
 
-    // Pero indica que la camara esta encendida
       scanning = true;
     }
-  } catch (err) {  // Para capturar errores al iniciar la cámara o escanear
+
+  } catch (err) {
     console.error(err);
     alert("Error al iniciar la cámara");
   }
 };
 
-// detener o apagar la cámara
+// detener cámara
 const cerrarCamara = async () => {
-  if (!scanning) return; // Evitar errores: Si no esta activa no hace nada
+  if (!scanning) return;
 
-  await html5QrCode.stop(); // Detiene la camara y el escáner
-  await html5QrCode.clear(); // Limpia la interfaz del escáner
+  if (html5QrCode) {
+    await html5QrCode.stop();
+    await html5QrCode.clear();
+  }
 
-  scanning = false; // Actualiza el estado para indicar que la cámara está apagada
+  scanning = false;
 };
 
+// procesar QR
 function procesarQR(decodedText) {
 
-  const cleanQR = decodedText.trim(); // 👈 CLAVE
+  const cleanQR = decodedText.trim();
 
   console.log("QR leído:", cleanQR);
   console.log("JSON:", qrData);
 
-  const existeEnJSON = qrData.find(item => 
-    item.code.trim() === cleanQR
+  const existeEnJSON = qrData.find(item =>
+    item.code && item.code.trim() === cleanQR
   );
 
   if (!existeEnJSON) {

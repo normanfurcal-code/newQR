@@ -40,18 +40,6 @@ const activarSonido = () => {
   audio.play().catch(() => {});
 };
 
-const onScan = (decodedText) => {
-  if (scanned) return;
-  scanned = true;
-
-  activarSonido();
-  procesarQR(decodedText);
-
-  setTimeout(() => {
-    cerrarCamara();
-  }, 300);
-};
-
 // iniciar cámara
 const encenderCamara = async () => { // async porque usa await: espera un resultado
   if (scanning) return; // Si ya está escaneando, no hace nada
@@ -89,8 +77,8 @@ const encenderCamara = async () => { // async porque usa await: espera un result
         {
           fps: 10, // Velocidad de escaneo (10 frames por segundo)
           qrbox: 250 // Tamaño del área de escaneo (250x250 píxeles)
-        }, onScan
-        /*(decodedText) => { // Función que se ejecuta cuando se detecta un código QR
+        },
+        (decodedText) => { // Función que se ejecuta cuando se detecta un código QR
           activarSonido(); // Reproduce el sonido de escaneo
 
           // Libreria swal para mostrar una alerta bonita con el texto del código QR detectado
@@ -101,7 +89,7 @@ const encenderCamara = async () => { // async porque usa await: espera un result
           });
           // apaga o desactiva el escaner despues de leer 
           cerrarCamara();
-        }*/
+        }
     );
 
     // Pero indica que la camara esta encendida

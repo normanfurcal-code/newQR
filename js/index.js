@@ -104,7 +104,7 @@ const encenderCamara = async () => { // async porque usa await: espera un result
     );*/
 
     // Pero indica que la camara esta encendida
-      scanning = true;
+      //scanning = true;
     }
   } catch (err) {  // Para capturar errores al iniciar la cámara o escanear
     console.error(err);

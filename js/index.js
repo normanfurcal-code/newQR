@@ -3,7 +3,7 @@ let html5QrCode;
 let scanning = false;
 var qrData = [];
 let qrMemory = JSON.parse(localStorage.getItem("qrMemory")) || [];
-let url = "json/qr.json";
+let url = "./json/qr.json";
 
 async function getData(url) {
   try {
@@ -48,7 +48,7 @@ const encenderCamara = async () => {
 
   html5QrCode = new Html5Qrcode("reader");
 
-  let procesando = false; // evita múltiples lecturas
+  let procesando = false;
 
   const onScan = (decodedText) => {
     if (procesando) return;
@@ -60,7 +60,7 @@ const encenderCamara = async () => {
   };
 
   try {
-    // ✅ MÉTODO UNIVERSAL (funciona en iPhone y Android)
+    // ✅ ESTE es el que funciona en iPhone
     await html5QrCode.start(
       { facingMode: "environment" },
       {
@@ -73,28 +73,8 @@ const encenderCamara = async () => {
     scanning = true;
 
   } catch (err) {
-    console.warn("Fallback a selección de cámara:", err);
-
-    try {
-      // 🔁 fallback para Android/PC
-      const cameras = await Html5Qrcode.getCameras();
-
-      if (cameras && cameras.length) {
-        const cameraId = cameras[0].id;
-
-        await html5QrCode.start(
-          cameraId,
-          { fps: 10, qrbox: 250 },
-          onScan
-        );
-
-        scanning = true;
-      }
-
-    } catch (error) {
-      console.error(error);
-      alert("No se pudo iniciar la cámara");
-    }
+    console.error("Error real en iPhone:", err);
+    alert("No se pudo abrir la cámara");
   }
 };
 

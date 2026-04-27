@@ -46,35 +46,48 @@ const activarSonido = () => {
 const encenderCamara = async () => {
   if (scanning) return;
 
-  html5QrCode = new Html5Qrcode("reader");
-
-  let procesando = false;
-
-  const onScan = (decodedText) => {
-    if (procesando) return;
-    procesando = true;
-
-    activarSonido();
-    procesarQR(decodedText);
-    cerrarCamara();
-  };
+  document.querySelector("video")?.setAttribute("playsinline", true);
 
   try {
-    // ✅ ESTE es el que funciona en iPhone
+    html5QrCode = new Html5Qrcode("reader");
+
+    const cameras = await Html5Qrcode.getCameras();
+
+    if (!cameras.length) {
+      alert("No hay cámaras disponibles");
+      return;
+    }
+
+    // 🔥 Buscar cámara trasera REAL (mejor que facingMode)
+    const backCamera = cameras.find(cam =>
+      cam.label.toLowerCase().includes("back") ||
+      cam.label.toLowerCase().includes("rear") ||
+      cam.label.toLowerCase().includes("environment")
+    );
+
+    const cameraId = backCamera ? backCamera.id : cameras[0].id;
+
     await html5QrCode.start(
-      { facingMode: "environment" },
+      cameraId,
       {
         fps: 10,
         qrbox: 250
       },
-      onScan
+      (decodedText) => {
+        const now = Date.now();
+        if (now - lastScan < 1500) return;
+
+        lastScan = now;
+        procesarQR(decodedText);
+      }
     );
 
     scanning = true;
+    //showMap(false);
 
   } catch (err) {
-    console.error("Error real en iPhone:", err);
-    alert("No se pudo abrir la cámara");
+    console.error(err);
+    alert("Error al iniciar la cámara: " + err);
   }
 };
 
